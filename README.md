@@ -1,31 +1,27 @@
+# TCP
 
-# TCP/UDP Server and Client
-
-The TCP Server and Client are two Java programs that enable communication between a server and a client using the TCP/IP protocol. The TCP Server listens for client connections on a specified port, while the TCP Client connects to the server's IP address and port. The server and client exchange data through TCP sockets, allowing for reliable and ordered transmission of messages.
-
-## TCPServer
-
-The TCPServer program represents the server-side of the TCP communication. It creates a server socket and listens for incoming client connections on a specified port. Once a client connects, the server can send and receive messages from the client.
+The TCP server acts like a waiting listener on a specific channel (port). When a TCP client dials into the server's address and port, they establish a reliable connection. This connection allows them to exchange messages in a guaranteed order, like a two-way conversation where messages always arrive in the correct sequence.
 
 ### Usage
 
-To use the TCPServer, follow these steps:
+To use the TCPServer:
 
-1. Compile the TCPServer.java file by navigating to the src folder and run the below command:
-
-   ```
-   javac Server/TCPServer.java
-   ```
-
-2. Run the compiled TCPServer class, providing the desired port number as a command-line argument:
+1. To compile the files needed for TCP communication, navigate to the src folder and run the below commands:
 
    ```
-   java Server/TCPServer <port>
+   javac Server/TCPDriver.java
    ```
 
-3. Add the `<port>` number on which you want the server to listen for incoming connections.
+   This will compile all the necessary java files required to perform TCP communication between client and server.
 
-4. The server will start and display a message indicating the IP address and port it is listening on. It will then wait for client connections.
+2. Run the compiled TCPDriver class, providing the desired port number as a command line argument:
+
+   ```
+   java Server/TCPDriver <port>
+   ```
+
+
+Note: Provide `<port>` number on which you want the TCP server to listen. The server will start and display a message indicating the port it is listening on. Now it waits for connections from the client.
 
 ## UDPServer
 
@@ -33,63 +29,64 @@ The UDP Server listens for client connections on a specified port, while the UDP
 
 ### Usage
 
-Follow the below steps carefully, to get the servers and client up and running:
+To use the UDPServer:
 
-1. Compile the UDPServer.java file by navigating to the src folder and run the below command:
-
-   ```
-   javac Server/UDPServer.java
-   ```
-
-2. Run the compiled UDPServer class, providing the desired port number as a command-line argument:
+1. To compile the files needed for UDP communication, navigate to the src folder and run the below commands:
 
    ```
-   java Server/UDPServer <port>
+   javac Server/UDPDriver.java
    ```
 
-3. Add the `<port>` number on which you want the server to listen for incoming connections.
+   This will compile all the necessary java files required to perform UDP communication between client and server.
 
-4. The server will start and display a message indicating the IP address and port it is listening on. It will then wait for client connections.
+2. Run the compiled UDPDriver class, providing the desired port number as a command line argument:
+
+   ```
+   java Server/UDPDriver <port>
+   ```
+
+
+Note: Provide `<port>` number on which you want the UDP server to listen. The server will start and display a message indicating the port it is listening on. Now it waits for connections from the client.
 
 
 ## UnifiedClient
 
-The UnifiedClient program represents the client-side of the communication. It connects to a UDP/TCP server using the server's IP address and port number. Once connected, the client can send messages to the server and receive responses.
+UnifiedClient is a common program to start a client (either TCP client or UDP client). It can be used to connect to TCP/UDP server using server's IP and port number. Once the setup is completed, client and server can send and receive messages to and from thes server.
 
 ### Usage
 
-To use the UnifiedClient, follow these steps:
+To use the UnifiedClient:
 
-1. Navigate to the src folder. Compile the UnifiedClient.java file using the Java compiler:
+1. To compile the files needed for TCP/UDP communication on client side, navigate to the src folder and run the below commands:
 
    ```
    javac Client/UnifiedClient.java
    ```
 
-2. Run the compiled TCPClient class, providing the server's IP address and port number as command-line arguments:
+2. Run the compiled UnifiedClient class, providing the server's IP address and port number as command line arguments:
 
    ```
-   java Client/TCPClient <server-ip> <server-port> <protocol>
+   java Client/UnifiedClient <server-ip> <server-port> <protocol>
    ```
 
-   Replace `<server-ip>` with the IP address (In our case `localhost`) of the server you want to connect to, and `<server-port>` with the corresponding port number and `<protocol>` either `tcp` or `udp`
+   
+Note: Provide `<server-ip>` as the IP address of the server(In case of a local machine test run it will be `localhost`), and `<server-port>` as the corresponding port number. Provide `<protocol>` as either `tcp` or `udp` based on what clint you want to start to connect to its corresponding server counterpart.
 
-3. The client will attempt to establish a connection with the server. If successful, it will display a message indicating the connection status.
+3. On successful connection, it will display a message indicating the connection status.
 
-4. Once connected, you can enter messages to send to the server. The client will display the responses received from the server.
+4. Once connected, you can choose the operation to be performed from the list of options available. Follow the instructions on screen to interact with the server. The client will display the responses received from the server.
 
-5. To terminate the client program, simply close the client window or use the appropriate termination command.
+5. To terminate the client program, simply close the client window or use the appropriate termination command (control(^) + C in Mac).
 
 -------
 
 # Docker Setup
 
-We have also done the docker setup for the project implementation.
+An optional docker setup for the project implementation is also available.
 
-## DocKer Installation
+## Docker Installation
 
-Make sure you have docker running on your local computer.
-
+Make sure you have docker installed and running on your local computer.
 
 
 ### Usage
@@ -146,3 +143,4 @@ To use the UDPServer, follow these steps:
 
 ## UDP DELETE
 ![UDP DELETE](Screenshots/udp-delete.png)
+
