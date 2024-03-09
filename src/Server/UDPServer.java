@@ -1,10 +1,5 @@
 package Server;
 
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -12,149 +7,132 @@ import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+/**
+ * UDPServer is a simple implementation of a UDP server in Java.
+ *
+ * It listens for incoming UDP packets, processes client requests, and sends
+ * back responses.
+ */
+
 public class UDPServer extends GeneralServer{
 
-
-
-    public UDPServer(int port)
+  /**
+   * Constructor for the UDPServer class.
+   * 
+   * @param port The port number on which the server will listen for UDP packets.
+   */
+  public UDPServer(int portNo)
+  {
+    try
     {
-      try
-      {
-        this.port = port;
-        this.mapUtils = new MapUtils("Server/map.properties");
-        UDPServer.myWriter = new FileWriter("Server/logs.txt");
-     
-      }
-      catch(Exception e)
-      {
-        errorLog(e.getMessage());
-      }
+      this.port = portNo;
+      this.mapUtils = new MapUtils("Server/map.properties");  
+      this.logger  = new Logger(); 
     }
+    catch(Exception e)
+    {
+      logger.errorLogger(e.getMessage());
+    }
+  }
 
-    void Server(int PORT) {
-    try (DatagramSocket datagramSocket = new DatagramSocket(PORT)) {
+  /**
+   * UDP server implementation of abstract function Server.
+   * 
+   * @param udpPortNo The port number on which the server will listen for incoming UDP packets.
+   */
+  void Server(int udpPortNo) {
+    try (DatagramSocket datagramSocket = new DatagramSocket(udpPortNo)) {
 
-      String start = getTimeStamp();
-      System.out.println(start + " UDP Server started on port: " + PORT);
-      byte[] requestBuffer = new byte[65499];
-      byte[] responseBuffer = new byte[512];
+      String start = logger.getTimeStamp();
+      System.out.println(start + "\nUDP Server is started on port number " + udpPortNo+".");
+      byte[] serverResponseBuffer = new byte[512];
+      byte[] serverRequestBuffer = new byte[65499];
+      
      
 
       while (true) {
-        DatagramPacket receivePacket = new DatagramPacket(requestBuffer, requestBuffer.length);
-        datagramSocket.receive(receivePacket);
-        InetAddress client = receivePacket.getAddress();
-        int clientPort = receivePacket.getPort();
+        DatagramPacket packetReceived = new DatagramPacket(serverRequestBuffer, serverRequestBuffer.length);
+        datagramSocket.receive(packetReceived);
+        InetAddress clientIPAddress = packetReceived.getAddress();
+        int clientPortNo = packetReceived.getPort();
 
 
-        byte[] payload = extractPayload(receivePacket);
-        // System.out.println("Payload is "+new String(pl));
+        byte[] payload = extractPayload(packetReceived);
+        byte[] checksum = extractChecksum(packetReceived);
 
-        byte[] checksum = extractChecksum(receivePacket);
 
         long clientChecksum = bytesToLong(checksum);
+        long serverChecksum = generateChecksum(payload,packetReceived.getLength());
 
-        // System.out.println("ClientCS "+clientChecksum);
-
-        long serverChecksum = generateChecksum(payload,receivePacket.getLength());
-
-        // System.out.println("ServerCS "+serverChecksum);
 
         if(serverChecksum != clientChecksum)
         {
-          errorLog("Malformed data packet!");
+          logger.errorLogger("Malformed data packet!");
           continue;
         }
 
-        String request = new String(payload, receivePacket.getOffset(), payload.length);
-        requestLog(request, client.toString(), String.valueOf(clientPort));
+        String requestString = new String(payload, packetReceived.getOffset(), payload.length);
+        logger.requestLogger(requestString, clientIPAddress.toString(), String.valueOf(clientPortNo));
 
         // Validate packet size
-        if (receivePacket.getLength() > 65499) {
-          errorLog("Received packet exceeds maximum allowed size.");
+        // Max packet size is lesser than the usual for UDP as 8 bytes are used for checksum purpose.
+        if (packetReceived.getLength() > 65499) {
+          logger.errorLogger("Received packet exceeds maximum allowed size for a UDP packet.");
           continue;
         }
 
         
-        // System.out.print("request is "+request);
-
         try {
-          String[] input = request.split(" ");
+          String[] input = requestString.split(" ");
 
-          // System.out.println("input string is "+Arrays.asList(input));
-          // if (input.length < 2) {
-          //   throw new IllegalArgumentException("Malformed request!");
-          // }
+          String op = input[0];
+
+          if (input.length < 2 && (!op.equals("GET-ALL") || !op.equals("DELETE-ALL"))) {
+            throw new IllegalArgumentException("Malformed request from client!");
+          }
+
           String result = performOperation(input);
-          // System.out.println("Output of key value pairs from prop is "+result);
 
-          
+          String[] pairs = result.split("\n");
 
-          // if(result.getBytes().length > 510)
-          // {
-            String[] pairs = result.split("\n");
+          for(int i = 0; i < pairs.length - 1; i++)
+          {
+            
+            logger.responseLogger(pairs[i].trim());
+            byte[] preResponseBuffer = pairs[i].trim().getBytes();
 
-            for(int i = 0; i < pairs.length - 1; i++)
-            {
-              
-              responseLog(pairs[i].trim());
-              byte[] preResponseBuffer = pairs[i].trim().getBytes();
+            serverResponseBuffer = generateResponse(preResponseBuffer,serverResponseBuffer.length);
 
-              responseBuffer = generateResponse(preResponseBuffer,responseBuffer.length);
+            serverResponseBuffer[serverResponseBuffer.length - 1] = 1;
 
-              responseBuffer[responseBuffer.length - 1] = 1;
-
-
-              // System.out.println("last byte in response buffer is "+responseBuffer[responseBuffer.length - 1]);
-
-              // System.out.println("Response Byte array in server is "+responseBuffer.length);
-              DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length, client, clientPort);
-              datagramSocket.send(responsePacket);
-              responseBuffer = new byte[512];
-              
-            }
+            DatagramPacket packetSent = new DatagramPacket(serverResponseBuffer, serverResponseBuffer.length, clientIPAddress,
+             clientPortNo);
+            datagramSocket.send(packetSent);
+            serverResponseBuffer = new byte[512];
+            
+          }
 
             
-            responseLog(pairs[pairs.length - 1].trim());
+            logger.responseLogger(pairs[pairs.length - 1].trim());
             byte[] preResponseBuffer = pairs[pairs.length - 1].trim().getBytes();
-            responseBuffer = generateResponse(preResponseBuffer,responseBuffer.length);
+            serverResponseBuffer = generateResponse(preResponseBuffer,serverResponseBuffer.length);
 
-            // System.out.println("last byte in response buffer is "+responseBuffer[responseBuffer.length - 1]);
-
-            // System.out.println("Response Byte array in server is "+responseBuffer.length);
-
-          
 
         } catch (IllegalArgumentException e) {
           String errorMessage = e.getMessage();
-          errorLog(errorMessage);
-          responseBuffer = errorMessage.getBytes();
+          logger.errorLogger(errorMessage);
+          serverResponseBuffer = errorMessage.getBytes();
         }
 
-        DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length,
-            client, clientPort);
+        DatagramPacket responsePacket = new DatagramPacket(serverResponseBuffer, serverResponseBuffer.length,
+            clientIPAddress, clientPortNo);
         datagramSocket.send(responsePacket);
-        requestBuffer = new byte[512];
+        serverResponseBuffer = new byte[512];
 
       
     }
     } catch (Exception e) {
-      errorLog("Error! Please make sure IP and Port are valid and try again."+e);
-    }
-
-    try {
-    BufferedReader reader = new BufferedReader(new FileReader("file.txt"));
-    int lines = 0;
-    while (reader.readLine() != null) lines++;
-    reader.close();
-
-    System.out.println("No of lines in Server "+lines);
-
-    myWriter.close();
-    }
-    catch(Exception e)
-    {
-      System.out.println("Exception is "+e);
+      logger.errorLogger("Error! Please make sure IP and Port are valid and try again."+e.getMessage());
     }
   
   }
@@ -162,9 +140,9 @@ public class UDPServer extends GeneralServer{
   private long bytesToLong(byte[] bytes) {
     ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
     buffer.put(bytes);
-    buffer.flip();//need flip 
+    buffer.flip();
     return buffer.getLong();
-}
+  }
 
 
   private byte[] extractChecksum(DatagramPacket packet)
@@ -202,7 +180,6 @@ public class UDPServer extends GeneralServer{
   private long generateChecksum(byte[] bytes, int length)
   {
     Checksum crc32 = new CRC32();
-    // System.out.println("crc32 object created "+bytes.length+" packet length "+length);
     crc32.update(bytes, 0, length - 8);
     return crc32.getValue();
   }

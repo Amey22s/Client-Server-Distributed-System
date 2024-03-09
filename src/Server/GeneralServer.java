@@ -1,92 +1,45 @@
 package Server;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
+/**
+ * An abstract class GeneralServer is used to abstract out code common to both TCP and UDP server.
+ * An abstract function Server is decaled which has different implementation defined in respective classes.
+ * It also declares obbjects from helper classes like MapUtils and Logger which are initialized in respective classes.
+ */
 
 public abstract class GeneralServer {
 
     MapUtils mapUtils;
+    Logger logger;
     int port;
-    static FileWriter myWriter;
-
-  /**
-   * Helper method to return the current timestamp.
-   *
-   * @return the current timestamp
-   */
-   static String getTimeStamp() {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
-    return "<Time: " + simpleDateFormat.format(new Date()) + ">";
-  }
-
-  /**
-   * Helper method to print Response messages.
-   *
-   * @param str message string
-   * @throws IOException 
-   */
-   static void responseLog(String str) throws IOException {
-    String val = getTimeStamp() + " Response -> " + str + "\n";
-    System.out.println(val);
-
-    myWriter.write(val);
-  }
-
-  /**
-   * Helper method to print Error messages.
-   *
-   * @param err error message string
-   */
-   static void errorLog(String err) {
-    System.out.println(getTimeStamp() +
-        " Error -> " + err);
-  }
-
-
-/**
-   * Helper method to print Request messages.
-   *
-   * @param str  message string
-   * @param ip   client IP address
-   * @param port client port number
-   */
-   static void requestLog(String str, String ip, String port) {
-    System.out.println(getTimeStamp() + " Request from: " + ip + ":" + port + " -> " + str);
-  }
-
-
 
 
   /**
-   * Helper method to process user request
+   * Method to process user request.
    * 
-   * @param input user request
-   * @return result of PUT/GET/DELETE operation
-   * @throws IllegalArgumentException in case of invalid input
+   * @param tokens user request specifying the operation to be performed.
+   * @return result of the operation, either PUT, GET, DELETE, GET-ALL or DELETE-ALL.
+   * @throws IllegalArgumentException in case a invalid input is provided by user.
    */
-    String performOperation(String[] input) throws IllegalArgumentException {
+    String performOperation(String[] tokens) throws IllegalArgumentException {
     try {
 
-      String operation = input[0].toUpperCase();
+      String op = tokens[0].toUpperCase();
       String key = "";
       int j = 0;
-      for (int i = 1; i < input.length; i++) {
-        if (Objects.equals(input[i], ",")) {
+      for (int i = 1; i < tokens.length; i++) {
+        if (tokens[i].equals(",")) {
           j = i;
           break;
         } else
-          key = key + input[i] + " ";
+          key = key + tokens[i] + " ";
       }
       key = key.trim();
 
-      switch (operation) {
+      switch (op) {
         case "PUT": {
           String value = "";
-          for (int i = j + 1; i < input.length; i++)
-            value = value + " " + input[i].trim();
+          for (int i = j + 1; i < tokens.length; i++)
+            value = value + " " + tokens[i].trim();
           value = value.trim();
           return mapUtils.addToMap(key, value);
         }
@@ -103,10 +56,10 @@ public abstract class GeneralServer {
           return mapUtils.deleteAll();
         }
         default:
-          throw new IllegalArgumentException();
+          throw new IllegalArgumentException("Please provide a valid operation.");
       }
     } catch (Exception e) {
-      return "BAD REQUEST!:  Please view README.md to check available operations." + e;
+      return "BAD REQUEST!:  Please view README.md to check available operations." + e.getMessage();
     }
 
   }

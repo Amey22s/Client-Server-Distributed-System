@@ -19,7 +19,6 @@ public class UDPClient extends GeneralClient{
     public UDPClient() throws IOException
     {
         mapUtils = new MapUtils(new Scanner(System.in));
-        myWriter = new FileWriter("Client/logs.txt");
      
     }
 
@@ -99,14 +98,6 @@ public class UDPClient extends GeneralClient{
       System.out.println(
           "Host or Port unknown error, try again!");
     }
-
-    BufferedReader reader = new BufferedReader(new FileReader("file.txt"));
-    int lines = 0;
-    while (reader.readLine() != null) lines++;
-    reader.close();
-
-    System.out.println("No of lines in CLient "+lines);
-    myWriter.close();
 
   }
 

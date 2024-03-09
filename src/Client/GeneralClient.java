@@ -1,6 +1,5 @@
 package Client;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
@@ -9,10 +8,7 @@ import java.util.Date;
 public abstract class GeneralClient {
 
     MapUtils mapUtils;
-    String request;
-
-    FileWriter myWriter;
-   
+    String request;   
 
 
   /**
@@ -35,8 +31,6 @@ public abstract class GeneralClient {
 
     String val = getTimeStamp() + " Response -> " + str + "\n";
     System.out.println(val);
-
-    myWriter.write(val);
   }
 
   /**
