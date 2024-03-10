@@ -120,40 +120,40 @@ Make sure you have docker installed and running on your local computer.
 #Screenshots
 
 ## TCP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE
-![TCP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE](Screenshots/TCP client start.png)
+![TCP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE](Screenshots/TCP-client-start.png)
 
 ## TCP PUT
-![TCP PUT](Screenshots/TCP put.png)
+![TCP PUT](Screenshots/TCP-put.png)
 
 ## TCP GET
-![TCP GET](Screenshots/TCP get.png)
+![TCP GET](Screenshots/TCP-get.png)
 
 ## TCP DELETE
-![TCP DELETE](Screenshots/TCP delete.png)
+![TCP DELETE](Screenshots/TCP-delete.png)
 
 ## TCP GET-ALL
-![TCP GET](Screenshots/TCP get all.png)
+![TCP GET](Screenshots/TCP-get-all.png)
 
 ## TCP DELETE-ALL
-![TCP DELETE](Screenshots/TCP delete all.png)
+![TCP DELETE](Screenshots/TCP-delete-all.png)
 
 ## UDP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE
-![UDP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE](Screenshots/UDP client start.png)
+![UDP Prepopulate & perform operations 10 PUT, 5 GET, 5 DELETE](Screenshots/UDP-client-start.png)
 
 ## UDP PUT
-![UDP PUT](Screenshots/UDP put.png)
+![UDP PUT](Screenshots/UDP-put.png)
 
 ## UDP GET
-![UDP GET](Screenshots/UDP get.png)
+![UDP GET](Screenshots/UDP-get.png)
 
 ## UDP DELETE
-![UDP DELETE](Screenshots/UDP delete.png)
+![UDP DELETE](Screenshots/UDP-delete.png)
 
 ## UDP GET-ALL
-![UDP GET](Screenshots/UDP get all.png)
+![UDP GET](Screenshots/UDP-get-all.png)
 
 ## UDP DELETE-ALL
-![UDP DELETE](Screenshots/UDP delete all.png)
+![UDP DELETE](Screenshots/UDP-delete-all.png)
 
 
 
