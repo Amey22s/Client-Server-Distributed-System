@@ -1,4 +1,4 @@
-package Server;
+package Client;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +17,8 @@ public class Logger {
      * @param ip   IP address of client.
      * @param port port number of client.
      */
-    void requestLogger(String str, String ip, String port) {
-        System.out.println(getTimeStamp() + "<< Request from :-> " + ip + ":" + port + " :-> " + str + " >>");
+    void requestLogger(String str) {
+        System.out.println(getTimeStamp() + "<< Request :-> " + str + " >>");
     }
 
 
