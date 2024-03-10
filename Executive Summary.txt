@@ -6,7 +6,6 @@ Additionally, logging communication activities was crucial for monitoring server
 Overall, this project is aimed to solidify understanding of network communication, socket programming, and error handling in distributed systems.
 
 
-
 Technical Impression:
 Building this project provided valuable insights into network programming and how protocols function. 
 I gained practical experience with TCP and UDP communication, understanding their strengths and weaknesses in reliability and speed. 
@@ -21,3 +20,18 @@ These servers often need to share data, such as configuration settings or user s
 Each server can efficiently access and modify the data stored with unique keys. 
 This promotes consistency (all servers have the same data) and scalability (you can easily add more servers without worrying about data duplication).
 
+Implementation strategy for DELETE-ALL:
+I am using properties file so using a simple clear would clear out the key-value store which simulates a DELETEALL operation 
+for both TCP and UDP.
+
+Implementation strategy for GET-ALL:
+I am iterating over the usual GET call implemented previously for all keys present in the keyset of the key value map. This
+simulates the GETALL operation for both TCP and UDP.
+
+Challenges faced:
+For TCP GETALL is implemented easily even for huge data as it uses a reliable connection and which once established can be used
+to send and receive large data using streams. In case of UDP, due to its vulnerability to packet loss and fixed size of UDP
+datagram packets, I faced some issue with huge data in GETALL commands. I found a solution for this by separating the data into
+individual key value pairs and sending these pairs one pairs at a time in one packet. Also I set last bit of my byte array 
+to 1 to indicate more packets are to come. On client side, I kept on receiving packets using datagramsocket till I did not receive
+a packet with last byte as 0 (which indicates end of data from server). For DELETEALL operation there were no challenges.
