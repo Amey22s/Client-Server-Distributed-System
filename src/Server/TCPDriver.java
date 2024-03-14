@@ -15,15 +15,21 @@ public class TCPDriver {
    */
   public static void main(String[] args) throws Exception {
 
+    try {
 
-    int tcpPortNo = Integer.parseInt(args[0]);
-    if (tcpPortNo > 65535) {
-      throw new IllegalArgumentException("Invalid input!" 
-          + "Please provide a valid input as mentioned in the README file.");
+      int tcpPortNo = Integer.parseInt(args[0]);
+      if (tcpPortNo > 65535) {
+        throw new IllegalArgumentException("Invalid input!" 
+            + "Please provide a valid input as mentioned in the README file.");
+      }
+
+      TCPServer tcp = new TCPServer(tcpPortNo);
+      tcp.Server(tcpPortNo);
     }
-
-    TCPServer tcp = new TCPServer(tcpPortNo);
-    tcp.Server(tcpPortNo);
+    catch(Exception e)
+    {
+      System.out.println("Program exited with error "+e.getMessage());
+    }
   }
 
 }

@@ -18,10 +18,11 @@ public class UnifiedClient {
    * @throws IOException if an I/O error occurs.
    */
   public static void main(String[] args) throws IOException {
-    if (args.length != 3 || Integer.parseInt(args[1]) > 65535) {
+    if (args.length < 3 || args.length > 4 || Integer.parseInt(args[1]) > 65535) {
       throw new IllegalArgumentException("Invalid argument! " +
           "Please provide valid IP and Port number and start again");
     }
+    
     InetAddress serverIP = InetAddress.getByName(args[0]);
     int serverPort = Integer.parseInt(args[1]);
     String protocol = args[2];
@@ -34,6 +35,12 @@ public class UnifiedClient {
     {
       TCPClient tcp = new TCPClient();
       tcp.Client(serverIP, serverPort);
+    }
+    else if (protocol.toLowerCase().equals("rpc"))
+    {
+      String keyStore = args[3];
+      RPCClient rpc = new RPCClient(keyStore);
+      rpc.Client(serverIP, serverPort);
     }
     else {
       throw new IllegalArgumentException("Invalid argument! " +
