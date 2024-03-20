@@ -39,9 +39,9 @@ public class RPCServer extends GeneralServer implements IRPC{
 
         try {
         IRPC stub = (IRPC) UnicastRemoteObject.exportObject(this, portNo);
-        Registry registry = LocateRegistry.getRegistry(); 
+        Registry registry = LocateRegistry.createRegistry(portNo); 
         
-        registry.bind(keyStore, stub); 
+        registry.rebind(keyStore, stub); 
         logger.responseLogger("Server started...");
         }
         catch(Exception e)

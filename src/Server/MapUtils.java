@@ -52,7 +52,7 @@ public class MapUtils {
    * @throws Exception If there is an error adding the key-value pair.
    */
 
-   protected String addToMap(String key, String value) throws Exception {
+   protected synchronized String addToMap(String key, String value) throws Exception {
     properties.setProperty(key, value);
     properties.store(write, null);
     String result = "Key = \"" + key + "\" with value = \"" + value + "\" inserted successfully!";
@@ -67,7 +67,7 @@ public class MapUtils {
    * @throws IOException If there is an error during deletion.
    */
 
-   protected String deleteFromMap(String key) throws IOException {
+   protected synchronized String deleteFromMap(String key) throws IOException {
     String result = "";
     if (properties.containsKey(key)) {
       properties.remove(key);
@@ -87,7 +87,7 @@ public class MapUtils {
    * @throws IOException If there is an error during retrieval.
    */
 
-   protected String getFromMap(String key) throws IOException {
+   protected synchronized String getFromMap(String key) throws IOException {
     String value = properties.getProperty(key);
     String result = value == null ? "Value not found for key = \"" + key + "\""
         : "Key = \"" + key + "\" ,Value = \"" + value + "\"";

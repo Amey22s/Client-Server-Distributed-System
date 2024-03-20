@@ -1,7 +1,5 @@
 package Client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -33,7 +31,7 @@ public class RPCClient extends GeneralClient{
             String start = logger.getTimeStamp();
             System.out.println(start + " Client started...");
 
-            Registry registry = LocateRegistry.getRegistry(null); 
+            Registry registry = LocateRegistry.getRegistry("localhost",serverPort); 
             IRPC store = (IRPC) registry.lookup(keyStore);
 
             prepopulateRPCRequests(store);
