@@ -29,20 +29,12 @@ public class RPCClient extends GeneralClient{
         try {
 
             String start = logger.getTimeStamp();
-            logger.responseLogger(start + " Client started...");
+            System.out.println(start + " Client started...");
 
             Registry registry = LocateRegistry.getRegistry("localhost",serverPort); 
             IRPC store = (IRPC) registry.lookup(keyStore);
 
-            logger.responseLogger("\nDo you want to prepopulate the key store? " +
-            "Please enter your choice (y/Y for Yes, anything else is a No)");
-            Scanner sc = new Scanner(System.in);
-            String choice = sc.nextLine();
-
-            if(choice.equals("y") || choice.equals("Y"))
-            {
-              prepopulateRPCRequests(store);
-            }
+            prepopulateRPCRequests(store);
 
             while (true) {
                 String operation = mapUtils.getOperation();
@@ -71,7 +63,6 @@ public class RPCClient extends GeneralClient{
         } catch (NotBoundException e) {
             logger.errorLogger(e.getMessage());
         }
-        
     }
 
 
