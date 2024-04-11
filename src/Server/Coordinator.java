@@ -40,8 +40,8 @@ public class Coordinator extends Thread
 	    		    logger.errorLogger("Server exception: " + e.toString());
 				}
 	    		
-			    Thread serverThread=new Thread();
-			    serverThread.start();
+			    // Thread serverThread=new Thread();
+			    // serverThread.start();
 	    	}
 	    }
 

@@ -4,6 +4,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -21,12 +24,16 @@ public class RPCServer extends GeneralServer implements IRPC{
     {
         try{
             this.keyStore = keyStore;
-            this.mapUtils = new MapUtils("Server/map.properties");
+            String mapFilename = "Server/map"+GeneralServer.serverNo+".properties";
+            GeneralServer.serverNo++;
+            this.mapUtils = new MapUtils(mapFilename);
             this.logger = new Logger();
             this.helper = new TwoPCHelper();
-            this.helper.setKeyStore(keyStore);
             
             this.otherServers = new int[4];
+            this.pendingChanges = Collections.synchronizedMap(new HashMap<UUID, Entry>());
+            this.pendingPrepareAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
+            this.pendingGoAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
 
           }
           catch(Exception e)
@@ -66,7 +73,7 @@ public class RPCServer extends GeneralServer implements IRPC{
             return Operation(input);
         }
 
-    GeneralServer.pendingChanges.put(messageId, entry);
+    this.pendingChanges.put(messageId, entry);
     helper.tellToPrepare(messageId, entry, otherServers);
     boolean prepareSucc = helper.waitAckPrepare(messageId, entry, otherServers);
     if (!prepareSucc)
@@ -81,15 +88,15 @@ public class RPCServer extends GeneralServer implements IRPC{
         return "fail";
     }
 
-    Entry v = GeneralServer.pendingChanges.get(messageId);
+    Entry v = this.pendingChanges.get(messageId);
 
     if (v == null)
     {
-        throw new IllegalArgumentException("The message is not in the storage");
+        throw new IllegalArgumentException("Message with message id "+messageId+" not found in pending changes.");
     }
 
     String message = Operation(v.toString());
-    GeneralServer.pendingChanges.remove(messageId);
+    this.pendingChanges.remove(messageId);
     return message;
     }
 
@@ -100,12 +107,12 @@ public class RPCServer extends GeneralServer implements IRPC{
 
         if (type == AckType.acknowledgeGo)
         {
-            GeneralServer.pendingGoAcks.get(messageId).put(yourPort,true) ;
+            this.pendingGoAcks.get(messageId).put(yourPort,true) ;
         } else if (type == AckType.acknowledgePrep)
         {
             // logger.responseLogger("in ack prep");
             // logger.responseLogger("pending prep acks"+pendingPrepareAcks);
-            GeneralServer.pendingPrepareAcks.get(messageId).put(yourPort,true);
+            this.pendingPrepareAcks.get(messageId).put(yourPort,true);
             logger.responseLogger("after");
         }
     }
@@ -113,47 +120,42 @@ public class RPCServer extends GeneralServer implements IRPC{
     {
         logger.errorLogger("Error in acknowledge is "+e.getMessage());
     }
-        //logger.responseLogger("Ack received from: " + yourPort);
    }
    
    public void go(UUID messageId, int callBackServer) throws RemoteException{
        
-       entry = GeneralServer.pendingChanges.get(messageId);
+       entry = this.pendingChanges.get(messageId);
        
        if (entry == null)
        {
-           throw new IllegalArgumentException("The message is not in the storage");
+           throw new IllegalArgumentException("Message with message id "+messageId+" not found in pending changes.");
        }
        
        Operation(entry.toString());
-    //    GeneralServer.pendingChanges.remove(messageId);
+       this.pendingChanges.remove(messageId);
        helper.sendAck(messageId, callBackServer, AckType.acknowledgeGo);
    }
 
    public void setServersInfo(int[] otherServersPorts, int yourPort)
            throws RemoteException {
-
-        // logger.responseLogger("In server with port "+yourPort);
-        // for(int port: otherServersPorts)
-        // {
-        //     System.out.println("Other ports port no is "+port);
-        // }
        
        this.otherServers = otherServersPorts;
        this.port = yourPort;
        this.helper.setPort(yourPort);
        this.helper.setLogger(logger);
+       this.helper.setKeyStore(keyStore);
+       this.helper.setMaps(pendingChanges,pendingPrepareAcks,pendingGoAcks);
    }
 
    public void prepareKeyValue(UUID messageId, Entry entry, int callBackServer) throws RemoteException{
 
         logger.responseLogger("In prepareKeyvalue");
 
-        if (GeneralServer.pendingChanges.containsKey(messageId)){
+        if (this.pendingChanges.containsKey(messageId)){
             helper.sendAck(messageId, callBackServer, AckType.acknowledgePrep);
         }
 
-        GeneralServer.pendingChanges.put(messageId, entry);
+        this.pendingChanges.put(messageId, entry);
         helper.sendAck(messageId, callBackServer, AckType.acknowledgePrep);
     }
    

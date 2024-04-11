@@ -1,7 +1,6 @@
 package Server;
 
-import java.util.Collections;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,19 +12,20 @@ import java.util.UUID;
 
 public abstract class GeneralServer {
 
+
+    static int serverNo;
     MapUtils mapUtils;
     Logger logger;
     int port;
     Entry entry;
-
     String keyStore;
-	  // Map<UUID, Entry> pendingChanges;
-	  // Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks;
-	  // Map<UUID,Map<Integer,Boolean>> pendingGoAcks;
+	  Map<UUID, Entry> pendingChanges;
+	  Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks;
+	  Map<UUID,Map<Integer,Boolean>> pendingGoAcks;
 
-    static Map<UUID, Entry> pendingChanges = Collections.synchronizedMap(new HashMap<UUID, Entry>());
-    static Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
-    static Map<UUID,Map<Integer,Boolean>> pendingGoAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
+    // Map<UUID, Entry> pendingChanges = Collections.synchronizedMap(new HashMap<UUID, Entry>());
+    // Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
+    // Map<UUID,Map<Integer,Boolean>> pendingGoAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
 
 
   /**

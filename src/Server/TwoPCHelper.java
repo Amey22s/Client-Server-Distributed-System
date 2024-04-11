@@ -30,6 +30,14 @@ public class TwoPCHelper extends GeneralServer{
 		this.port = port;
 	}
 
+	protected void setMaps(Map<UUID, Entry> pendingChanges, Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks, 
+	Map<UUID,Map<Integer,Boolean>> pendingGoAcks)
+	{
+		this.pendingChanges = pendingChanges;
+		this.pendingGoAcks = pendingGoAcks;
+		this.pendingPrepareAcks = pendingPrepareAcks;
+	}
+
 	protected void setLogger(Logger logger)
 	{
 		this.logger = logger;
@@ -60,7 +68,7 @@ public class TwoPCHelper extends GeneralServer{
 			
 			areAllAck = 0;
 			retry--;
-			Map<Integer,Boolean> map = GeneralServer.pendingGoAcks.get(messageId);
+			Map<Integer,Boolean> map = this.pendingGoAcks.get(messageId);
 			
 			for (int server : otherServers)
 			{
@@ -97,7 +105,7 @@ public class TwoPCHelper extends GeneralServer{
 			}
 			areAllAck = 0;
 			retry--;
-			Map<Integer,Boolean> map = GeneralServer.pendingPrepareAcks.get(messageId);
+			Map<Integer,Boolean> map = this.pendingPrepareAcks.get(messageId);
 			for (int server : otherServers)
 			{
 				if (map.get(server))
@@ -121,7 +129,7 @@ public class TwoPCHelper extends GeneralServer{
 
 	protected void tellToPrepare(UUID messageId, Entry entry, int[] otherServers) {
 
-		GeneralServer.pendingPrepareAcks.put(messageId, Collections.synchronizedMap(new HashMap<Integer,Boolean>()));
+		this.pendingPrepareAcks.put(messageId, Collections.synchronizedMap(new HashMap<Integer,Boolean>()));
 		
 		for (int server : otherServers)
 		{
@@ -132,7 +140,7 @@ public class TwoPCHelper extends GeneralServer{
     
 	protected void tellToGo(UUID mesUuid, int[] otherServers)
 	{
-		GeneralServer.pendingGoAcks.put(mesUuid, Collections.synchronizedMap(new HashMap<Integer, Boolean>()));
+		this.pendingGoAcks.put(mesUuid, Collections.synchronizedMap(new HashMap<Integer, Boolean>()));
 		
 		for (int server : otherServers)
 		{
@@ -144,7 +152,7 @@ public class TwoPCHelper extends GeneralServer{
 	protected void callGo(UUID messageId, int server)
 	{
 		try{
-			GeneralServer.pendingGoAcks.get(messageId).put(server, false);
+			this.pendingGoAcks.get(messageId).put(server, false);
 			Registry registry = LocateRegistry.getRegistry(server);
 		    IRPC stub = (IRPC) registry.lookup(keyStore);
 		    stub.go(messageId, port);
@@ -159,7 +167,7 @@ public class TwoPCHelper extends GeneralServer{
 	{
 		
 		try{
-			GeneralServer.pendingPrepareAcks.get(messageId).put(server, false);
+			this.pendingPrepareAcks.get(messageId).put(server, false);
 			Registry registry = LocateRegistry.getRegistry(server);
 		    IRPC stub = (IRPC) registry.lookup(keyStore);
 
@@ -182,7 +190,7 @@ public class TwoPCHelper extends GeneralServer{
 		}catch(Exception ex)
 		{
 			logger.errorLogger("Something went wrong in sending Ack, removing data from temporary storage"+ex.getMessage());
-			GeneralServer.pendingChanges.remove(messageId);
+			this.pendingChanges.remove(messageId);
 		}
 	}
     
