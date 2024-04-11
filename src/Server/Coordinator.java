@@ -34,14 +34,12 @@ public class Coordinator extends Thread
 	    			servers[i] = new RPCServer(keyStore);
 	    			servers[i].Server(helper.serverPorts[i]);
 	    		    giveNewServerInfo(helper.serverPorts, helper.serverPorts[i],keyStore);
-	    		    // logger.responseLogger("Server " +(i+1)+ " is running at port " + helper.serverPorts[i]);
+	    		    logger.responseLogger("Server " +(i+1)+ " is running at port " + helper.serverPorts[i]);
 	    		    
 	    		} catch (Exception e) {
 	    		    logger.errorLogger("Server exception: " + e.toString());
 				}
-	    		
-			    // Thread serverThread=new Thread();
-			    // serverThread.start();
+
 	    	}
 	    }
 

@@ -55,7 +55,7 @@ public class RPCServer extends GeneralServer implements IRPC{
         IRPC stub = (IRPC) UnicastRemoteObject.exportObject(this, portNo);
         Registry registry = LocateRegistry.createRegistry(portNo); 
         
-        registry.rebind("kv", stub); 
+        registry.rebind(keyStore, stub); 
         logger.responseLogger("Server started...");
         }
         catch(Exception e)
@@ -78,14 +78,14 @@ public class RPCServer extends GeneralServer implements IRPC{
     boolean prepareSucc = helper.waitAckPrepare(messageId, entry, otherServers);
     if (!prepareSucc)
     {
-        return "fail";
+        return "Operation could not be performed.";
     }
 
     helper.tellToGo(messageId, otherServers);
     boolean goSucc = helper.waitToAckGo(messageId, otherServers);
     if (!goSucc)
     {
-        return "fail";
+        return "Operation could not be performed.";
     }
 
     Entry v = this.pendingChanges.get(messageId);
@@ -103,7 +103,7 @@ public class RPCServer extends GeneralServer implements IRPC{
     public void acknowledge(UUID messageId, int yourPort, AckType type) throws RemoteException{
 
         try {
-        logger.responseLogger("in acknowledge port is "+yourPort);
+        // logger.responseLogger("in acknowledge port is "+yourPort);
 
         if (type == AckType.acknowledgeGo)
         {
@@ -158,11 +158,5 @@ public class RPCServer extends GeneralServer implements IRPC{
         this.pendingChanges.put(messageId, entry);
         helper.sendAck(messageId, callBackServer, AckType.acknowledgePrep);
     }
-   
-   public int getPort() throws RemoteException{
-       
-       return this.port;
-   }
 
-    
 }

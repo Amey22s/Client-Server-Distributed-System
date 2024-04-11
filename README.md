@@ -1,45 +1,43 @@
-# JAVA RMI
-
-A Java-specific protocol enabling applications on separate machines to interact as if they were local objects. It lets you call methods on remote objects transparently. It utilizes object serialization, dynamic class loading, and a security manager for secure data transfer. While multithreaded, RMI itself isn't thread-safe by default, requiring careful implementation for concurrent access.
-
 ### Usage
 
-To use the RPCServer:
+To use the Coordinator:
 
-1. To compile the files needed for RPC communication, navigate to the src folder and run the below commands:
-
-   ```
-   javac Server/RPCDriver.java
-   ```
-
-   This will compile all the necessary java files required to perform RPC communication between client and server.
-
-2. Run the compiled RPCDriver class, providing the desired port number for RMI registry and the desired name for the key corresponding to stub/skeleton object in RMI registry as a command line argument:
+1. To compile the files needed for 2 PC communication, navigate to the src folder and run the below commands:
 
    ```
-   java Server/RPCDriver <port> <keystore name>
+   javac Server/Coordinator.java
+   ```
+
+   This will compile all the necessary java files required to perform 2 PC communication between client and server.
+
+2. Run the compiled Coordinator class, providing the desired port numbers for RMI registries to hold server stubs and the desired name for the key corresponding to stub/skeleton object in RMI registry as a command line argument:
+
+   ```
+   java Server/Coordinator <port1> <port2> <port3> <port4> <port5> <keystore name>
    ```
 
 
-Note: Provide `<keystore name>` to which you want the RMI registry to link your stub/skeleton object to. The same name needs to be provided in client. It will be used to successfully lookup the name in RMI registry to fetch stub object. Provide `<port>` as the corresponding port number where you want to run your RMI registry.
+Note: Provide `<keystore name>` to which you want the RMI registry to link your stub/skeleton object to. The same name needs to be provided in client. It will be used to successfully lookup the name in RMI registry to fetch stub object. Provide `<port1/2/3/4/5>` as the corresponding port numbers where you want to run your RMI stub servers hosted.
+
+Note: This project is developed to handle exactly 5 server stubs and these port numbers need to be given as an input in client as well.
 
 
-To use the UnifiedClient:
+To use the TPCClient:
 
-1. To compile the files needed for RPC communication on client side, navigate to the src folder and run the below commands:
-
-   ```
-   javac Client/UnifiedClient.java
-   ```
-
-2. Run the compiled UnifiedClient class, providing the server's IP address, port number, protocol to be used and desired name for the key corresponding to stub/skeleton object in RMI registry as command line arguments:
+1. To compile the files needed for 2 PC communication on client side, navigate to the src folder and run the below commands:
 
    ```
-   java Client/UnifiedClient <server-ip> <rmi-port> <protocol> <keystore name>
+   javac Client/TPCDriver.java
+   ```
+
+2. Run the compiled TPCDriver class, providing the port numbers and desired name for the key corresponding to stub/skeleton object in RMI registry as command line arguments:
+
+   ```
+   java Client/TPCDriver <port1> <port2> <port3> <port4> <port5> <keystore name>
    ```
 
    
-Note: Provide `<keystore name>` to which the RMI registry linked your stub/skeleton object to. The same name as provided in server. It will be used to successfully lookup the name in RMI registry to fetch stub object. Provide `<server-ip>` as the IP address of the server(In case of a local machine test run it will be `localhost`), and `<rmi-port>` as the corresponding port number where you run your RMI registry earlier in server. Provide `<protocol>` as 'rpc' in this case.
+Note: Provide `<keystore name>` to which the RMI registry linked your stub/skeleton object to. The same name as provided in server. It will be used to successfully lookup the name in RMI registry to fetch stub object. Provide `<port1/2/3/4/5>` as the corresponding port number where you run your RMI registry earlier in server.
 
 3. On successful connection, it will display a message indicating the connection status.
 
@@ -51,36 +49,13 @@ Note: Provide `<keystore name>` to which the RMI registry linked your stub/skele
 
 Executive Summary:
 
-Assignment Overview
-This assignment focused on developing a client-server application using Java RMI (Remote Method Invocation) for communication. RMI allows us to interact with remote objects as if they were local, enabling method invocations and data exchange. It utilizes object serialization, dynamic class loading, and a security manager for secure data transfer. While multithreaded, RMI itself isn't thread-safe by default, requiring careful implementation for concurrent access. This project involved building a basic key-value store where the client could perform PUT, GET, GETALL, DELETE, and DELETEALL operations on the server's data. The core objective was to solidify our understanding of RMI, multithreading principles, and fundamental client-server architecture.
+Assignment Overview:
+This project builds upon the prior project's Key-Value Store Server by achieving high availability and increased bandwidth through replication across five distinct servers. This distributed system ensures consistent data retrieval and modification by enabling clients to interact with any of the replicas seamlessly. To guarantee consistency across these replicated stores, a two-phase commit protocol is implemented for PUT and DELETE operations.  While the core client functionality remains largely unchanged, it now has the flexibility to contact any replica for its operations.
 
+Technical Impression:
+Replicating the Key-Value Store Server across multiple servers presented an engaging challenge.  My main focus was on designing and implementing the two-phase commit protocol to coordinate updates and maintain consistency between replicas. The two-phase commit protocol involved sending a "prepare commit" message to all replicas in the first phase, followed by a "commit" message upon receiving acknowledgments from all. This process ensured that all replicas were prepared to receive the update before committing it. Additional considerations included utilizing different properties files on each server to manage data and updates efficiently. Looking forward, potential improvements could involve implementing key-based locking for a more granular approach to data access control, rather than relying on file-level locking.
 
-Technical Impression
-This assignment provided valuable hands-on experience in implementing a distributed application using Java RMI. The implementation process involved:
-
-1. Designing the remote interface
-2. Creating the remote interface implementation
-3. Compiling the implementation and generating skeleton objects
-4. Register skeleton object in registry and create a stub object by using look up in registry.
-5. Compiling and launching the server and client applications
-
-
-Challenges Encountered:
-- Code reusability: Challenges in properly defining the remote interface, and implementing it in such a way that I could use majority of my existing code and logic. 
-- RMI registry: How to create a rmi registry and use it to register objects in it which will be then looked up at client side and used to perform desired action.
-- Thread Safety: Implementing thread-safe functionality to handle concurrent client requests required careful consideration of synchronization mechanisms and utilizing concurrency control provided by Properties class in Java.
-
-RMI and Thread Safety:
-While RMI offers an inbuilt thread pool and can handle concurrent requests, it's crucial to ensure server-side data is synchronized when accessed by multiple clients. This is achieved by using the synchronized keyword in the functionality implementation methods, ensuring exclusive access to shared resources during modification. Additionally, Properties class provides a thread-safe object, offering fine-grained locking mechanisms.
-
-Key Learnings:
-This assignment significantly enhanced my understanding of distributed systems, RMI communication, and concurrent programming. Areas for potential improvement include optimizations for scalability and performance.
-
-Overall:
-This project provided a valuable learning experience, solidifying core concepts in RMI, multithreading, client-server communication, robust error handling and advanced logging mechanisms,. Future endeavors could focus on implementing the suggested improvements for a more scalable  and efficient application.
+This project provided valuable experience in distributed system design, particularly regarding data consistency and fault tolerance in replicated systems. The importance of robust protocols and careful handling of communication and failures were all emphasized throughout the development process.
 
 Note: 
 The GET-ALL and DELETE-ALL functions are optional implementation from last make up assignments.
-
-
-

@@ -98,7 +98,7 @@ public class TwoPCHelper extends GeneralServer{
 		while (retry != 0)
 		{
 			try{
-			  Thread.sleep(1000);
+			  Thread.sleep(500);
 			}catch(Exception ex)
 			{
 				logger.errorLogger("wait fail.");

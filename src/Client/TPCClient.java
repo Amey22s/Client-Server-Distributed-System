@@ -4,95 +4,126 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Scanner;
 import java.util.UUID;
 
 import Utils.IRPC;
 
 public class TPCClient extends GeneralClient{
 
-    static IRPC[] stubs;
-    static Registry[] registries;
+    private IRPC[] stubs;
+    private Registry[] registries;
+    private String keystore;
+    private int[] serverPorts;
 
-	public static void main(String[] args) throws Exception 
+
+	public TPCClient(String keyStoreName, int[] serverPorts)
 	{	
-    	Helper hl = new Helper();
-        // InetAddress serverIP = InetAddress.getByName(args[0]);
-		hl.ClientParseArgs(args);
+        this.mapUtils = new MapUtils(new Scanner(System.in));
+        this.logger = new Logger();
+        this.keystore = keyStoreName;
+        // InetAddress serverIP = InetAddress.getByName("localhost");
+		this.serverPorts = serverPorts;
 		stubs = new IRPC[5];
 		registries = new Registry[5];
+    }
 
-	try 
-    {
-		for (int i = 0 ; i < hl.serverPorts.length ; i++)
+    void Client(InetAddress serverIP, int serverPort) throws IOException {
+    try {
+
+        String start = logger.getTimeStamp();
+        logger.responseLogger(start + " Client started...");
+        for (int i = 0 ; i < serverPorts.length ; i++)
         {
-            registries[i] = LocateRegistry.getRegistry("localhost",hl.serverPorts[i]);
-            stubs[i] = (IRPC) registries[i].lookup("kv");  
+            registries[i] = LocateRegistry.getRegistry("localhost",serverPorts[i]);
+            stubs[i] = (IRPC) registries[i].lookup(keystore); 
+            prepopulate2PCRequests(stubs[i]);
         }
 
+        while (true) {
+            Scanner sc = new Scanner(System.in);
+            logger.requestLogger("Please mention the server you want to use to perform your action (Enter a number between 0-4):");
+            logger.requestLogger("Enter server no.:");
+            String serverNo = sc.next();
+            int server = Integer.parseInt(serverNo);
 
-        
-		
-		while(true)
-        {
-            System.out.print("Please enter machine number, function and values:");
-            System.out.print("\nWe have 5 machines, you should choose between 0-4" + "\n");
-            System.out.print("If it is a PUT, the input format is: <SERVER No.>:<PUT>,<KEY>,<VALUE>" +  "\n" );
-            System.out.print("If it is a GET or DEL, the format is: <SERVER No.>:<GET/DEL>,<KEY>" + "\n");
-            System.out.print("Example  0 PUT 100 188 or 0 DEL 100"+ "\n");
-            String input = GetStringFromTerminal();
-            
-            String[] formattedInput = input.split(":");
-            int serverNo = Integer.parseInt(formattedInput[0]);
-            String operation = formattedInput[1];
+            if(server > 4 || server < 0)
+            {
+                logger.errorLogger("Please ensure the server number is between 0-4.");
+                continue;
+            }
 
-            hl.log("Successfully performed operation: \n"+stubs[serverNo].TPCPreprocess(UUID.randomUUID(), operation));
+            String operation = mapUtils.getOperation();
+            createrequest(operation);
+            logger.requestLogger(request);
+    
+    
+            // Send request packet to the server
+            String response = stubs[server].TPCPreprocess(UUID.randomUUID(),request);
+    
+            // Receive response packet from the server
+            // String response = receivePacket(dataInputStream);
+    
+            if (response.startsWith("ERROR")) {
+                // System.out.println("Received error response from the server: " + response);
+                logger.errorLogger("Received error response from the server: " + response);
+            } else {
+                logger.responseLogger(response);
+            }
+            }
 
-        }
-		 
-	   
-	    
-	} 
-    catch (Exception e) 
-    {
-        hl.log("This is the error "+e);
-	} 
-    finally
-    {
-        for (int i = 0; i < hl.serverPorts.length ; i++)
-        {
-        System.exit(hl.serverPorts[i]);
+        } catch (MalformedURLException e) {
+            logger.errorLogger(e.getMessage());
+        } catch (RemoteException e) {
+            logger.errorLogger(e.getMessage());
+        } catch (NotBoundException e) {
+            logger.errorLogger(e.getMessage());
         }
     }
-	}  
-	
-public static String GetStringFromTerminal() throws IOException 
-{
-				BufferedReader stringIn = new BufferedReader (new InputStreamReader(System.in));
-				return  stringIn.readLine();
-			}
-
-@Override
-void Client(InetAddress serverIP, int serverPort) throws IOException {
-
-        String operation = mapUtils.getOperation();
-        createrequest(operation);
-        logger.requestLogger(request);
-
-
-        // Send request packet to the server
-        // String response = store.Operation(request);
-
-        // Receive response packet from the server
-        // String response = receivePacket(dataInputStream);
-
-        // if (response.startsWith("ERROR")) {
-        //   // System.out.println("Received error response from the server: " + response);
-        //   logger.errorLogger("Received error response from the server: " + response);
-        // } else {
-        //   logger.responseLogger(response);
-        // }
-
-}
+    /**
+   * Method to automate simulation of 5+ operation of PUT, GET and DELETE each.
+   * 
+   * @param store the stub fetched from the RMI registry
+   * @throws IOException if an error occurs during writing or reading
+   */
+    private void prepopulate2PCRequests(IRPC store)  throws IOException 
+    {
+        for (int i = 0; i < 10; i++) {
+            String request = "PUT " + i + " , " + i * 10;
+            String response = store.Operation(request);
+            if (response.startsWith("ERROR")) {
+              // System.out.println("Received error response from the server: " + response);
+              logger.errorLogger("Received error response from the server: " + response);
+            } else {
+              logger.responseLogger(response);
+            }
+          }
+    
+          for (int i = 0; i < 5; i++) {
+            String request = "GET " + i;
+            String response = store.Operation(request);
+            if (response.startsWith("ERROR")) {
+              // System.out.println("Received error response from the server: " + response);
+              logger.errorLogger("Received error response from the server: " + response);
+            } else {
+              logger.responseLogger(response);
+            }
+          }
+    
+          for (int i = 0; i < 5; i++) {
+            String request = "DELETE " + i;
+            String response = store.Operation(request);
+            if (response.startsWith("ERROR")) {
+              // System.out.println("Received error response from the server: " + response);
+              logger.errorLogger("Received error response from the server: " + response);
+            } else {
+              logger.responseLogger(response);
+            }
+          }
+    }
 }
