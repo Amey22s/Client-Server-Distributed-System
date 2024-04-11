@@ -33,17 +33,20 @@ public class Coordinator extends Thread
 	    		try{
 	    			servers[i] = new RPCServer(keyStore);
 	    			servers[i].Server(helper.serverPorts[i]);
-	    		    giveNewServerInfo(helper.serverPorts, helper.serverPorts[i],keyStore);
+	    		    passOtherServerInfo(helper.serverPorts, helper.serverPorts[i],keyStore);
 	    		    logger.responseLogger("Server " +(i+1)+ " is running at port " + helper.serverPorts[i]);
 	    		    
 	    		} catch (Exception e) {
 	    		    logger.errorLogger("Server exception: " + e.toString());
 				}
 
+				Thread server = new Thread();
+				server.start();
+
 	    	}
 	    }
 
-	private static void giveNewServerInfo(int[] servers, int port, String keyStore) 
+	private static void passOtherServerInfo(int[] servers, int port, String keyStore) 
 	{
 		try{
 			Registry registry = LocateRegistry.getRegistry(port);

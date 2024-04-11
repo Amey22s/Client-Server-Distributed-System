@@ -8,6 +8,12 @@ public class TPCDriver {
 
     public static int[] serverPorts = new int[5];
 
+/**
+   * The main start point of the TPCDriver program.
+   *
+   * @param args command line arguments containing port numbers and key value store name.
+   * @throws IOException if an I/O error occurs.
+   */
     public static void main(String[] args) throws UnknownHostException, IOException
     {
         try

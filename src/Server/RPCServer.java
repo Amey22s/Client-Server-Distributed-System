@@ -20,6 +20,12 @@ public class RPCServer extends GeneralServer implements IRPC{
     private TwoPCHelper helper;
     private int[] otherServers;
 
+    
+    /**
+     * Constructor for RPCServer class.
+     * @param keyStore key value store name for RMI registry.
+     */
+
     public RPCServer(String keyStore)
     {
         try{
@@ -73,31 +79,30 @@ public class RPCServer extends GeneralServer implements IRPC{
             return Operation(input);
         }
 
-    this.pendingChanges.put(messageId, entry);
-    helper.tellToPrepare(messageId, entry, otherServers);
-    boolean prepareSucc = helper.waitAckPrepare(messageId, entry, otherServers);
-    if (!prepareSucc)
-    {
-        return "Operation could not be performed.";
-    }
+        boolean canCommit = prepareCommit(messageId, entry, otherServers);
+   
+        if (!canCommit)
+        {
+            return "Operation could not be performed.";
+        }
 
-    helper.tellToGo(messageId, otherServers);
-    boolean goSucc = helper.waitToAckGo(messageId, otherServers);
-    if (!goSucc)
-    {
-        return "Operation could not be performed.";
-    }
+        helper.commit(messageId, otherServers);
+        boolean commit = helper.commitAck(messageId, otherServers);
+        if (!commit)
+        {
+            return "Operation could not be performed.";
+        }
 
-    Entry v = this.pendingChanges.get(messageId);
+        Entry entryToBeCommited = this.pendingChanges.get(messageId);
 
-    if (v == null)
-    {
-        throw new IllegalArgumentException("Message with message id "+messageId+" not found in pending changes.");
-    }
+        if (entryToBeCommited == null)
+        {
+            throw new IllegalArgumentException("Message with message id "+messageId+" not found in pending changes.");
+        }
 
-    String message = Operation(v.toString());
-    this.pendingChanges.remove(messageId);
-    return message;
+        String message = Operation(entryToBeCommited.toString());
+        this.pendingChanges.remove(messageId);
+        return message;
     }
 
     public void acknowledge(UUID messageId, int yourPort, AckType type) throws RemoteException{
@@ -122,7 +127,7 @@ public class RPCServer extends GeneralServer implements IRPC{
     }
    }
    
-   public void go(UUID messageId, int callBackServer) throws RemoteException{
+   public void processCommit(UUID messageId, int callBackServer) throws RemoteException{
        
        entry = this.pendingChanges.get(messageId);
        
@@ -147,7 +152,7 @@ public class RPCServer extends GeneralServer implements IRPC{
        this.helper.setMaps(pendingChanges,pendingPrepareAcks,pendingGoAcks);
    }
 
-   public void prepareKeyValue(UUID messageId, Entry entry, int callBackServer) throws RemoteException{
+   public void processEntry(UUID messageId, Entry entry, int callBackServer) throws RemoteException{
 
         logger.responseLogger("In prepareKeyvalue");
 
@@ -157,6 +162,13 @@ public class RPCServer extends GeneralServer implements IRPC{
 
         this.pendingChanges.put(messageId, entry);
         helper.sendAck(messageId, callBackServer, AckType.acknowledgePrep);
+    }
+
+    private boolean prepareCommit(UUID messageId, Entry entry, int[] otherServers)
+    {
+        this.pendingChanges.put(messageId, entry);
+        helper.canCommit(messageId, entry, otherServers);
+        return helper.canCommitAck(messageId, entry, otherServers);
     }
 
 }

@@ -52,7 +52,7 @@ public class TwoPCHelper extends GeneralServer{
     }
 
 
-	protected boolean waitToAckGo(UUID messageId, int[] otherServers) {
+	protected boolean commitAck(UUID messageId, int[] otherServers) {
 
 		int areAllAck = 0;
 		int retry = 3;
@@ -60,7 +60,7 @@ public class TwoPCHelper extends GeneralServer{
 		while (retry != 0)
 		{
 			try{
-			  Thread.sleep(1000);
+			  Thread.sleep(500);
 			}catch(Exception ex)
 			{
 				logger.errorLogger("wait fail.");
@@ -78,7 +78,7 @@ public class TwoPCHelper extends GeneralServer{
 				}
 				else
 				{
-					callGo(messageId, server);
+					prepCommit(messageId, server);
 				}
 			}
 			if (areAllAck == 4)
@@ -90,7 +90,7 @@ public class TwoPCHelper extends GeneralServer{
 		return false;
 	}
 
-	protected boolean waitAckPrepare(UUID messageId, Entry entry, int[] otherServers) {
+	protected boolean canCommitAck(UUID messageId, Entry entry, int[] otherServers) {
 
 		int areAllAck = 0;
 		int retry = 3;
@@ -114,7 +114,7 @@ public class TwoPCHelper extends GeneralServer{
 				}
 				else
 				{
-					callPrepare(messageId, entry, server);
+					prepEntry(messageId, entry, server);
 				}
 			}
 			
@@ -127,35 +127,35 @@ public class TwoPCHelper extends GeneralServer{
 		return false;
 	}
 
-	protected void tellToPrepare(UUID messageId, Entry entry, int[] otherServers) {
+	protected void canCommit(UUID messageId, Entry entry, int[] otherServers) {
 
 		this.pendingPrepareAcks.put(messageId, Collections.synchronizedMap(new HashMap<Integer,Boolean>()));
 		
 		for (int server : otherServers)
 		{
-			callPrepare(messageId, entry, server);
+			prepEntry(messageId, entry, server);
 		}
 		
 	}
     
-	protected void tellToGo(UUID mesUuid, int[] otherServers)
+	protected void commit(UUID mesUuid, int[] otherServers)
 	{
 		this.pendingGoAcks.put(mesUuid, Collections.synchronizedMap(new HashMap<Integer, Boolean>()));
 		
 		for (int server : otherServers)
 		{
-			callGo(mesUuid, server);
+			prepCommit(mesUuid, server);
 		}
 
 	}
 	
-	protected void callGo(UUID messageId, int server)
+	protected void prepCommit(UUID messageId, int server)
 	{
 		try{
 			this.pendingGoAcks.get(messageId).put(server, false);
 			Registry registry = LocateRegistry.getRegistry(server);
 		    IRPC stub = (IRPC) registry.lookup(keyStore);
-		    stub.go(messageId, port);
+		    stub.processCommit(messageId, port);
 		}catch(Exception ex)
 		{
 			logger.errorLogger("Something went wrong in sending go, removing data from temporary storage");
@@ -163,7 +163,7 @@ public class TwoPCHelper extends GeneralServer{
 		
 	}
 	
-	private void callPrepare(UUID messageId, Entry entry, int server)
+	private void prepEntry(UUID messageId, Entry entry, int server)
 	{
 		
 		try{
@@ -171,7 +171,7 @@ public class TwoPCHelper extends GeneralServer{
 			Registry registry = LocateRegistry.getRegistry(server);
 		    IRPC stub = (IRPC) registry.lookup(keyStore);
 
-		    stub.prepareKeyValue(messageId, entry, port);
+		    stub.processEntry(messageId, entry, port);
 		}catch(Exception ex)
 		{
 			logger.errorLogger("Something went wrong in sending Ack, removing data from temporary storage"+ex.getMessage());

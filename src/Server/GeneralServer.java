@@ -23,10 +23,6 @@ public abstract class GeneralServer {
 	  Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks;
 	  Map<UUID,Map<Integer,Boolean>> pendingGoAcks;
 
-    // Map<UUID, Entry> pendingChanges = Collections.synchronizedMap(new HashMap<UUID, Entry>());
-    // Map<UUID,Map<Integer,Boolean>> pendingPrepareAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
-    // Map<UUID,Map<Integer,Boolean>> pendingGoAcks = Collections.synchronizedMap(new HashMap<UUID,Map<Integer,Boolean>>());
-
 
   /**
    * Method to process user request.
@@ -71,6 +67,13 @@ public abstract class GeneralServer {
     }
 
   }
+
+/**
+ * Creates an Entry object by parsing a given input string.
+ *
+ * @param input The string to be parsed.
+ * @return A newly created Entry object containing the parsed information.
+ */
 
   protected Entry createEntry(String input)
   {

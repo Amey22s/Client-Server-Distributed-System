@@ -14,6 +14,7 @@ public class MapUtils {
 
     private  Properties properties;
     private OutputStream write;
+    private Lock lock;
     // private InputStream read;
 
 
@@ -35,6 +36,7 @@ public class MapUtils {
         // properties.load(read);
         write = new FileOutputStream(propertiesFile);
         properties.store(write, null);
+        this.lock = new Lock();
         }
         catch(Exception e)
         {
@@ -53,8 +55,10 @@ public class MapUtils {
    */
 
    protected synchronized String addToMap(String key, String value) throws Exception {
+    lock.activateModifyLock();
     properties.setProperty(key, value);
     properties.store(write, null);
+    lock.deactivateModifyLock();
     String result = "Key = \"" + key + "\" with value = \"" + value + "\" inserted successfully!";
     return result;
   }
@@ -67,11 +71,13 @@ public class MapUtils {
    * @throws IOException If there is an error during deletion.
    */
 
-   protected synchronized String deleteFromMap(String key) throws IOException {
+   protected synchronized String deleteFromMap(String key) throws Exception {
     String result = "";
     if (properties.containsKey(key)) {
+      lock.activateModifyLock();
       properties.remove(key);
       properties.store(write, null);
+      lock.deactivateModifyLock();
       result = "Deleted key \"" + key + "\"" + " !";
     } else {
       result = "Key not found.";
@@ -87,8 +93,10 @@ public class MapUtils {
    * @throws IOException If there is an error during retrieval.
    */
 
-   protected synchronized String getFromMap(String key) throws IOException {
+   protected synchronized String getFromMap(String key) throws Exception {
+    lock.activateReadLock();
     String value = properties.getProperty(key);
+    lock.deactivateReadLock();
     String result = value == null ? "Value not found for key = \"" + key + "\""
         : "Key = \"" + key + "\" ,Value = \"" + value + "\"";
     return result;
@@ -102,7 +110,7 @@ public class MapUtils {
    * @throws IOException If there is an error during retrieval.
    */
 
-  protected String getAll() throws IOException
+  protected String getAll() throws Exception
   {
     StringBuilder sb = new StringBuilder();
 

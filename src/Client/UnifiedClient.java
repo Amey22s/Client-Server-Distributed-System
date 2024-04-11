@@ -12,7 +12,7 @@ import java.net.InetAddress;
 public class UnifiedClient {
 
   /**
-   * The main start point of the UDPClient program.
+   * The main start point of the UnifiedClient program.
    *
    * @param args command line arguments containing server IP and port.
    * @throws IOException if an I/O error occurs.

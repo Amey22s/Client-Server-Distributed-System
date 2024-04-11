@@ -21,16 +21,18 @@ public class TPCClient extends GeneralClient{
     private String keystore;
     private int[] serverPorts;
 
-
+  /**
+   * Constructor for the TPCClient class.
+   * 
+   */
 	public TPCClient(String keyStoreName, int[] serverPorts)
 	{	
         this.mapUtils = new MapUtils(new Scanner(System.in));
         this.logger = new Logger();
         this.keystore = keyStoreName;
-        // InetAddress serverIP = InetAddress.getByName("localhost");
-		this.serverPorts = serverPorts;
-		stubs = new IRPC[5];
-		registries = new Registry[5];
+		    this.serverPorts = serverPorts;
+        this.stubs = new IRPC[5];
+        this.registries = new Registry[5];
     }
 
     void Client(InetAddress serverIP, int serverPort) throws IOException {
