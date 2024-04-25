@@ -15,4 +15,9 @@ public interface IRPC extends Remote{
     public void processCommit(UUID messageId,  int callBackServer) throws RemoteException;
     public void processEntry(UUID messageId, Entry entry, int callBackServer) throws RemoteException;
     public void setServersInfo(int[] otherServersPorts, int yourPorts) throws RemoteException;
+
+    // // For PAXOS
+    // public boolean prepare(int proposalId, int key, int action) throws RemoteException;
+	// public boolean accept(int proposalId, int key, int action) throws RemoteException;
+	// public String commit(int key, int action) throws RemoteException;
 }

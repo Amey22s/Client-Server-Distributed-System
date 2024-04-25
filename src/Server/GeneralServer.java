@@ -1,6 +1,7 @@
 package Server;
 
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +15,9 @@ public abstract class GeneralServer {
 
 
     static int serverNo;
+    static int NUMBER_OF_SERVERS;
+    static int COUNT_OF_SERVERS;
+    static final Map<String,Integer> serverMap = new HashMap<>();
     MapUtils mapUtils;
     Logger logger;
     int port;
@@ -103,6 +107,22 @@ public abstract class GeneralServer {
     return new Entry(key, value, op);
 
   }
+
+  protected boolean isValid(String input){
+    try {
+      Entry entry = createEntry(input);
+      
+      System.out.println("Map is "+mapUtils.getAll());
+      if(mapUtils.containsKey(entry.getKey()))
+      {
+          System.out.println("Key is "+entry.getKey());
+          return true;		
+      }		
+    } catch (Exception e) {
+      logger.errorLogger("Error in contains key is "+e.getMessage());
+    }
+    return false;
+	}
 
 
     abstract void Server(int PORT);

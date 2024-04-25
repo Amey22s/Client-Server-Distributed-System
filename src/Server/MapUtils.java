@@ -142,5 +142,10 @@ public class MapUtils {
     return result;
   }
 
+  protected boolean containsKey(String key)
+  {
+    return properties.containsKey(key);
+  }
+
     
 }

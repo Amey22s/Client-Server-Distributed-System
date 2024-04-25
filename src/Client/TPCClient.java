@@ -1,8 +1,6 @@
 package Client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
@@ -10,13 +8,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
-import java.util.UUID;
 
-import Utils.IRPC;
+import Utils.IPaxos;
 
 public class TPCClient extends GeneralClient{
 
-    private IRPC[] stubs;
+    private IPaxos[] stubs;
     private Registry[] registries;
     private String keystore;
     private int[] serverPorts;
@@ -31,7 +28,7 @@ public class TPCClient extends GeneralClient{
         this.logger = new Logger();
         this.keystore = keyStoreName;
 		    this.serverPorts = serverPorts;
-        this.stubs = new IRPC[5];
+        this.stubs = new IPaxos[5];
         this.registries = new Registry[5];
     }
 
@@ -43,8 +40,8 @@ public class TPCClient extends GeneralClient{
         for (int i = 0 ; i < serverPorts.length ; i++)
         {
             registries[i] = LocateRegistry.getRegistry("localhost",serverPorts[i]);
-            stubs[i] = (IRPC) registries[i].lookup(keystore); 
-            prepopulate2PCRequests(stubs[i]);
+            stubs[i] = (IPaxos) registries[i].lookup(keystore); 
+            // prepopulate2PCRequests(stubs[i]);
         }
 
         while (true) {
@@ -66,10 +63,7 @@ public class TPCClient extends GeneralClient{
     
     
             // Send request packet to the server
-            String response = stubs[server].TPCPreprocess(UUID.randomUUID(),request);
-    
-            // Receive response packet from the server
-            // String response = receivePacket(dataInputStream);
+            String response = stubs[server].Operation(request);
     
             if (response.startsWith("ERROR")) {
                 // System.out.println("Received error response from the server: " + response);
@@ -80,11 +74,11 @@ public class TPCClient extends GeneralClient{
             }
 
         } catch (MalformedURLException e) {
-            logger.errorLogger(e.getMessage());
+            logger.errorLogger("Malformed URL exception "+e.getMessage());
         } catch (RemoteException e) {
-            logger.errorLogger(e.getMessage());
+            logger.errorLogger("Remote exception "+e.getMessage());
         } catch (NotBoundException e) {
-            logger.errorLogger(e.getMessage());
+            logger.errorLogger("Not bound exception "+e.getMessage());
         }
     }
     /**
@@ -93,7 +87,7 @@ public class TPCClient extends GeneralClient{
    * @param store the stub fetched from the RMI registry
    * @throws IOException if an error occurs during writing or reading
    */
-    private void prepopulate2PCRequests(IRPC store)  throws IOException 
+    private void prepopulate2PCRequests(IPaxos store)  throws IOException 
     {
         for (int i = 0; i < 10; i++) {
             String request = "PUT " + i + " , " + i * 10;
